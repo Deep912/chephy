@@ -4,19 +4,32 @@ import AiResponce from "./AiResponce";
 import { getRecipeFromMistral } from "../ai";
 
 const Main = () => {
-  const [ingredients, setIngredients] = React.useState([]);
+  const [ingredients, setIngredients] = React.useState([
+    "chicken",
+    "all the main spices",
+    "corn",
+    "heavy cream",
+    "pasta",
+  ]);
   const [recipe, setRecipe] = React.useState("");
+  const recipeSection = React.useRef(null);
+
+  React.useEffect(() => {
+    if (recipe !== "" && recipeSection.current !== null) {
+      recipeSection.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [recipe]);
 
   async function getRecipe() {
-    console.log("wait for response");
-    let recipeFromAi = await getRecipeFromMistral(ingredients);
-    setRecipe(recipeFromAi);
+    const recipeMarkdown = await getRecipeFromMistral(ingredients);
+    setRecipe(recipeMarkdown);
   }
 
   function addIngredient(formData) {
     const newIngredient = formData.get("ingredient");
     setIngredients((prevIngredients) => [...prevIngredients, newIngredient]);
   }
+
   return (
     <main>
       <form action={addIngredient} className="add-ingredient-form">
@@ -30,7 +43,11 @@ const Main = () => {
       </form>
 
       {ingredients.length > 0 && (
-        <IngredientsList ingredients={ingredients} getRecipe={getRecipe} />
+        <IngredientsList
+          ref={recipeSection}
+          ingredients={ingredients}
+          getRecipe={getRecipe}
+        />
       )}
 
       {recipe && <AiResponce recipe={recipe} />}
